@@ -1,0 +1,142 @@
+import java.util.List;
+import java.util.ArrayList;
+import java.util.*;
+public class Main {
+
+ public static void main(String[] args) {
+ students s1= new students(123,"maya");
+ students s2= new students(124,"malak");
+ students s3= new students(125,"sarah");
+ students s4= new students(126,"ali");
+ 
+ 
+ courses c1 = new courses (127,"Data structures");
+ courses c2 = new courses (128,"Programming");
+ courses c3 = new courses(129,"Data science");
+ courses c4 = new courses (130,"Math");
+ 
+ sparse_table t1 = new sparse_table(10,10);
+ // insert courses for students
+ t1.insert(s1, c1);
+ t1.insert(s1, c2);
+ t1.insert(s1,c3);
+ t1.insert(s2, c1);
+ t1.insert(s3, c3);
+ t1.insert(s3, c2);
+ t1.insert(s4, c4);
+ // get courses for student
+ int studentid=123;
+ List<courses> courseslist = t1.getstudentcourses(studentid);
+ System.out.println("Course for student " + studentid + " is : ");
+ for(courses course : courseslist ){
+ System.out.println(course.name);
+ }
+ System.out.println();
+ 
+ // get students for course
+ int courseid = 130;
+ List <students> studentslist = t1.getcoursestudents(courseid);
+ System.out.println("Students for course " + courseid + " is : ");
+ for(students student : studentslist){
+ System.out.println(student.name);
+ } 
+ }
+ 
+}
+public class students {
+ 
+ int ID;
+ String name;
+ 
+ public students(int ID, String name){
+ this.ID=ID;
+ this.name=name;
+ }
+ 
+}
+public class courses {
+ 
+ int course_id;
+ String name;
+ 
+ public courses(int course_id, String name) {
+ this.course_id = course_id;
+ this.name = name;
+ 
+ }
+ 
+ 
+}
+public class sparse_table {
+ 
+ public static class Node {
+ Node next;
+ int row;
+ int column;
+ students student;
+ courses course;
+ public Node(int row, int column, students student, courses course) {
+ next=null;
+ this.row = row;
+ this.column = column;
+ this.student = student;
+ this.course = course;
+ } 
+ }
+ private int coursesnum;
+ private final int studentsnum;
+ private Node [] arr;
+ 
+ public sparse_table(int coursesnum, int studentsnum) {
+ this.coursesnum = coursesnum;
+ this.studentsnum = studentsnum;
+ this.arr = new Node[coursesnum*studentsnum];
+ 
+ }
+ 
+ private int getindex(int row,int col){
+ int hashcode=(row*31+col); 
+ return Math.abs(hashcode)%arr.length;
+ }
+ 
+ public void insert(students student , courses course){
+ int row= student.ID;
+ int col= course.course_id;
+ int index=getindex(row,col);
+ Node newnode = new Node(row,col,student,course);
+ newnode.next=arr[index];
+ arr[index]=newnode;
+ 
+ }
+ 
+ List<courses> getstudentcourses (int studentid){
+ List<courses> course= new ArrayList<>();
+ for(int col =0;col<coursesnum;col++){
+ int index=getindex(studentid,col);
+ Node current = arr[index];
+ while(current!=null){
+ if(current.row==studentid){
+ course.add(current.course);
+ }
+ current=current.next;
+ }
+ 
+ }
+ return course;
+ }
+ 
+ List<students> getcoursestudents(int courseid){
+ List<students> studentslist= new ArrayList<>();
+ for(int row = 0; row<studentsnum;row++){
+ int index =getindex(row,courseid);
+ Node current = arr[index];
+ while(current!=null){
+ if(current.column==courseid){
+ studentslist.add(current.student);
+ }
+ current=current.next;
+ }
+ 
+ }
+ return studentslist;
+ }
